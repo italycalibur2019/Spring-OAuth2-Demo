@@ -1,0 +1,37 @@
+server:
+  port: 9999
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+          default-filters:
+            - TokenRelay=
+          routes:
+            - id: backend_resource_route
+              uri: http://127.0.0.1:9181
+              predicates:
+                - Path=/resources/**
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:9180
+      client:
+        provider:
+          oauth-server:
+            issuer-uri: http://127.0.0.1:9180
+            user-info-uri: ${spring.security.oauth2.client.provider.oauth-server.issuer-uri}/user
+            authorization-uri: ${spring.security.oauth2.client.provider.oauth-server.issuer-uri}/oauth2/authorize
+            token-uri: ${spring.security.oauth2.client.provider.oauth-server.issuer-uri}/oauth2/token
+        registration:
+          client-server-oidc:
+            provider: oauth-server
+            client-id: client-server
+            client-secret: secret
+            client-name: client-server-oidc
+            authorization-grant-type: authorization_code
+            redirect-uri: http://127.0.0.1:9999/login/oauth2/code/{registrationId}
+            scope:
+              - profile
+              - openid
